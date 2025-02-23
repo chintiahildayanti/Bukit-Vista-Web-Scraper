@@ -3,6 +3,7 @@ name: Scheduled Scraping
 on:
   schedule:
     - cron: '0 0 * * *'  # Menjalankan setiap hari pada tengah malam (UTC)
+  workflow_dispatch:  # Menambahkan opsi untuk menjalankan manual
 
 jobs:
   scrape:
