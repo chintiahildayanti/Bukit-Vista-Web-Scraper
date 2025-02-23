@@ -25,7 +25,6 @@ from nltk.tokenize import word_tokenize
 from nltk.stem import WordNetLemmatizer
 from nltk.stem import PorterStemmer
 from sklearn.feature_extraction.text import TfidfVectorizer
-from tensorflow.keras.preprocessing.text import Tokenizer
 # from google.colab import files
 nltk.download('punkt')
 nltk.download('wordnet')
@@ -745,67 +744,6 @@ def vectorizer(bukit_vista_df):
 
 # Menerapkan fungsi
 bukit_vista_df = vectorizer(bukit_vista_df)
-
-"""12. Tokenizer"""
-
-# Mendefinisikan fungsi tokenizer
-def tokenizer(bukit_vista_df):
-  # Inisialisasi tokenizer
-  tokenizer_title = Tokenizer()
-  tokenizer_property_type = Tokenizer()
-  tokenizer_tags = Tokenizer()
-  tokenizer_address_detail = Tokenizer()
-  tokenizer_price = Tokenizer()
-  tokenizer_property_id = Tokenizer()
-  tokenizer_area = Tokenizer()
-
-  # Membuat tokenizer untuk kolom 'title'
-  title_tokenizer = tokenizer_title.fit_on_texts(bukit_vista_df['cleaned_title'])
-
-  # Mengonversi teks dalam kolom 'title' menjadi urutan angka (sequences)
-  bukit_vista_df['title_sequences'] = tokenizer_title.texts_to_sequences(bukit_vista_df['cleaned_title'])
-
-  # Membuat tokenizer untuk kolom 'property_type'
-  property_type_tokenizer = tokenizer_property_type.fit_on_texts(bukit_vista_df['cleaned_property_type'])
-
-  # Mengonversi teks dalam kolom 'property_type' menjadi urutan angka (sequences)
-  bukit_vista_df['property_type_sequences'] = tokenizer_property_type.texts_to_sequences(bukit_vista_df['cleaned_property_type'])
-
-  # Membuat tokenizer untuk kolom 'tags'
-  tags_tokenizer = tokenizer_tags.fit_on_texts(bukit_vista_df['tags'])
-
-  # Mengonversi teks dalam kolom 'tags' menjadi urutan angka (sequences)
-  bukit_vista_df['tags_sequences'] = tokenizer_tags.texts_to_sequences(bukit_vista_df['tags'])
-
-  # Membuat tokenizer untuk kolom 'address_detail'
-  address_detail_tokenizer = tokenizer_address_detail.fit_on_texts(bukit_vista_df['address_detail'])
-
-  # Mengonversi teks dalam kolom 'address_detail' menjadi urutan angka (sequences)
-  bukit_vista_df['address_detail_sequences'] = tokenizer_address_detail.texts_to_sequences(bukit_vista_df['address_detail'])
-
-  # Membuat tokenizer untuk kolom 'price'
-  price_tokenizer = tokenizer_price.fit_on_texts(bukit_vista_df['price_in_usd'])
-
-  # Mengonversi teks dalam kolom 'price' menjadi urutan angka (sequences)
-  bukit_vista_df['price_sequences'] = tokenizer_price.texts_to_sequences(bukit_vista_df['price_in_usd'])
-
-  # Membuat tokenizer untuk kolom 'property_id'
-  property_id_tokenizer = tokenizer_property_id.fit_on_texts(bukit_vista_df['property_id'])
-
-  # Mengonversi teks dalam kolom 'property_id' menjadi urutan angka (sequences)
-  bukit_vista_df['property_id_sequences'] = tokenizer_property_id.texts_to_sequences(bukit_vista_df['property_id'])
-
-  # Membuat tokenizer untuk kolom 'area'
-  area_tokenizer = tokenizer_area.fit_on_texts(bukit_vista_df['cleaned_area'])
-
-  # Mengonversi teks dalam kolom 'area' menjadi urutan angka (sequences)
-  bukit_vista_df['area_sequences'] = tokenizer_area.texts_to_sequences(bukit_vista_df['cleaned_area'])
-
-  # Mengembalikan bukit_vista_df
-  return bukit_vista_df
-
-# Menerapkan fungsi
-bukit_vista_df = tokenizer(bukit_vista_df)
 
 """13. Download Dataset"""
 
