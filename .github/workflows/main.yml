@@ -51,4 +51,3 @@ jobs:
       run: |
         echo "Scraping script failed!"
         exit 1
-        
