@@ -1,11 +1,14 @@
 """1. Import library yang dibutuhkan"""
 from bs4 import BeautifulSoup
 from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 from zipfile import ZipFile
 import requests
+import logging
 import time
 import json
 import os
@@ -113,17 +116,12 @@ uluwatu_property = uluwatu_property[uluwatu_property['title'] != "Bingin Beach H
 
 # fungsi untuk scraping href yang berada di "https://www.bukitvista.com/property/"
 def scrape_property_links(url: str) -> pd.DataFrame:
-    # Membuat instance dari Chrome WebDriver dengan konfigurasi khusus
+    # Setup ChromeDriver
     options = webdriver.ChromeOptions()
-    options.add_argument("--start-maximized")  # Membuka browser dalam mode layar penuh
-    options.add_argument("--headless")  # Menjalankan browser tanpa tampilan GUI
-    options.add_argument("--disable-gpu")  # Menonaktifkan akselerasi GPU
-    options.add_argument("--no-sandbox")  # Menonaktifkan sandbox (diperlukan untuk server)
-    options.add_argument("--disable-dev-shm-usage")  # Mengurangi penggunaan memori bersama
-    options.binary_location = "/usr/bin/google-chrome"  # **Pastikan path Chrome benar**
-
-    # Inisialisasi WebDriver dengan path Chrome
-    driver = webdriver.Chrome(options=options)
+    options.add_argument("--headless")  # Run in headless mode
+    options.add_argument("--no-sandbox")
+    options.add_argument("--disable-dev-shm-usage")
+    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
 
     # Memuat halaman
     driver.get(url)
@@ -759,7 +757,7 @@ property_description.to_excel('property_description.xlsx', index=False)
 
 def upload_to_google_drive(file_path, folder_id):
     try:
-        # Load kredensial dari environment variable (GitHub Secret)
+        # Load credentials from environment variable
         credentials_info = json.loads(os.environ["GOOGLE_CREDENTIALS"])
         creds = service_account.Credentials.from_service_account_info(
             credentials_info,
@@ -797,3 +795,13 @@ if __name__ == "__main__":
     
     except Exception as e:
         print(f"Terjadi kesalahan saat menjalankan script: {e}")
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+try:
+    # Your scraping code here
+    logger.info("Scraping started...")
+except Exception as e:
+    logger.error(f"An error occurred: {e}")
+    raise
