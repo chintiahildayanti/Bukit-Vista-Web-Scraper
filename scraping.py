@@ -7,6 +7,7 @@ from selenium.webdriver.common.by import By
 from zipfile import ZipFile
 import requests
 import time
+import json
 import os
 import re
 import numpy as np
@@ -754,34 +755,42 @@ bukit_vista_df.to_excel('data_bukit_vista.xlsx', index=False)
 property_description.to_excel('property_description.xlsx', index=False)
 
 def upload_to_google_drive(file_path, folder_id):
-    # Load kredensial dari file JSON
-    creds = service_account.Credentials.from_service_account_file(
-        'credentials.json', scopes=['https://www.googleapis.com/auth/drive']
-    )
+    try:
+        # Load kredensial dari environment variable (GitHub Secret)
+        credentials_info = json.loads(os.environ["GOOGLE_CREDENTIALS"])
+        creds = service_account.Credentials.from_service_account_info(
+            credentials_info,
+            scopes=['https://www.googleapis.com/auth/drive']
+        )
 
-    # Buat layanan Google Drive
-    service = build('drive', 'v3', credentials=creds)
+        # Buat layanan Google Drive
+        service = build('drive', 'v3', credentials=creds)
 
-    folder_id = '1zdLvHzqvv0PGJ6Bt5zhL52yxMTi845ou'
+        # Buat metadata file
+        file_metadata = {
+            'name': os.path.basename(file_path),
+            'parents': [folder_id]  # ID folder tujuan di Google Drive
+        }
 
-    # Buat metadata file
-    file_metadata = {
-        'name': os.path.basename(file_path),
-        'parents': [folder_id]  # ID folder tujuan di Google Drive
-    }
+        # Unggah file
+        media = MediaFileUpload(file_path, resumable=True)
+        file = service.files().create(body=file_metadata, media_body=media, fields='id').execute()
 
-    # Unggah file
-    media = MediaFileUpload(file_path, resumable=True)
-    file = service.files().create(body=file_metadata, media_body=media, fields='id').execute()
-
-    print(f"File {file_path} berhasil diunggah ke Google Drive dengan ID: {file.get('id')}")
+        print(f"File {file_path} berhasil diunggah ke Google Drive dengan ID: {file.get('id')}")
+    
+    except Exception as e:
+        print(f"Gagal mengunggah file: {e}")
 
 if __name__ == "__main__":
-    # Jalankan scraping dan simpan hasilnya
-    bukit_vista_df.to_excel('data_bukit_vista.xlsx', index=False)
-    property_description.to_excel('property_description.xlsx', index=False)
+    try:
+        # Jalankan scraping dan simpan hasilnya
+        bukit_vista_df.to_excel('data_bukit_vista.xlsx', index=False)
+        property_description.to_excel('property_description.xlsx', index=False)
 
-    # Unggah file ke Google Drive
-    folder_id = '1zdLvHzqvv0PGJ6Bt5zhL52yxMTi845ou'  # Ganti dengan ID folder Google Drive Anda
-    upload_to_google_drive('data_bukit_vista.xlsx', folder_id)
-    upload_to_google_drive('property_description.xlsx', folder_id)
+        # Unggah file ke Google Drive
+        folder_id = '1zdLvHzqvv0PGJ6Bt5zhL52yxMTi845ou'  # Ganti dengan ID folder Google Drive Anda
+        upload_to_google_drive('data_bukit_vista.xlsx', folder_id)
+        upload_to_google_drive('property_description.xlsx', folder_id)
+    
+    except Exception as e:
+        print(f"Terjadi kesalahan saat menjalankan script: {e}")
