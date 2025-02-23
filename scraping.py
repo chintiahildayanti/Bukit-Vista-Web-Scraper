@@ -114,13 +114,16 @@ uluwatu_property = uluwatu_property[uluwatu_property['title'] != "Bingin Beach H
 # fungsi untuk scraping href yang berada di "https://www.bukitvista.com/property/"
 def scrape_property_links(url: str) -> pd.DataFrame:
     # Membuat instance dari Chrome WebDriver dengan konfigurasi khusus
-    option = webdriver.ChromeOptions()
-    option.add_argument("--start-maximized")  # Membuka jendela browser Chrome dalam mode layar penuh
-    option.add_argument("--headless")   # Menjalankan browser dalam mode tanpa antarmuka grafis
-    option.add_argument("--disable-gpu")  # Menonaktifkan akselerasi GPU
-    option.add_argument("--no-sandbox")   # Menonaktifkan sandbox untuk keamanan
-    option.add_argument("--remote-debugging-port=56905")   # Mengaktifkan debugging jarak jauh pada port 9230
-    driver = webdriver.Chrome(options=option)
+    options = webdriver.ChromeOptions()
+    options.add_argument("--start-maximized")  # Membuka browser dalam mode layar penuh
+    options.add_argument("--headless")  # Menjalankan browser tanpa tampilan GUI
+    options.add_argument("--disable-gpu")  # Menonaktifkan akselerasi GPU
+    options.add_argument("--no-sandbox")  # Menonaktifkan sandbox (diperlukan untuk server)
+    options.add_argument("--disable-dev-shm-usage")  # Mengurangi penggunaan memori bersama
+    options.binary_location = "/usr/bin/google-chrome"  # **Pastikan path Chrome benar**
+
+    # Inisialisasi WebDriver dengan path Chrome
+    driver = webdriver.Chrome(options=options)
 
     # Memuat halaman
     driver.get(url)
