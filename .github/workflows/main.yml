@@ -3,6 +3,7 @@ name: Scheduled Scraping
 on:
   schedule:
     - cron: '0 0 * * *'  # Menjalankan setiap hari pada tengah malam (UTC)
+  workflow_dispatch:  # Menambahkan opsi untuk menjalankan manual
 
 jobs:
   scrape:
@@ -39,7 +40,7 @@ jobs:
         rm -f credentials.json
 
     - name: Upload results as artifact
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: scraping-results
         path: |
