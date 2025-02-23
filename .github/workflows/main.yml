@@ -15,51 +15,17 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v2
       with:
-        python-version: '3.8'
+        python-version: '3.11'  # Gunakan versi mayor saja
 
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
 
-    - name: Install ChromeDriver
+    - name: Install Google Chrome and ChromeDriver
       run: |
         sudo apt-get update
-        sudo apt-get install -y chromium-chromedriver
-
-    - name: Run scraping script
-      env:
-        GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
-      run: |
-        echo "$GOOGLE_CREDENTIALS" > credentials.json
-        python scraping.pyname: Scheduled Scraping
-
-on:
-  schedule:
-    - cron: '0 0 * * *'  # Menjalankan setiap hari pada tengah malam (UTC)
-
-jobs:
-  scrape:
-    runs-on: ubuntu-latest
-
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
-
-    - name: Set up Python
-      uses: actions/setup-python@v2
-      with:
-        python-version: '3.8'
-
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
-
-    - name: Install ChromeDriver
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y chromium-chromedriver
+        sudo apt-get install -y google-chrome-stable chromium-chromedriver
 
     - name: Run scraping script
       env:
@@ -67,3 +33,21 @@ jobs:
       run: |
         echo "$GOOGLE_CREDENTIALS" > credentials.json
         python scraping.py
+
+    - name: Clean up credentials
+      run: |
+        rm -f credentials.json
+
+    - name: Upload results as artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: scraping-results
+        path: |
+          data_bukit_vista.xlsx
+          property_description.xlsx
+
+    - name: Check if scraping script ran successfully
+      if: ${{ failure() }}
+      run: |
+        echo "Scraping script failed!"
+        exit 1

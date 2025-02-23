@@ -838,7 +838,7 @@ def upload_to_google_drive(file_path, folder_id):
 
     print(f"File {file_path} berhasil diunggah ke Google Drive dengan ID: {file.get('id')}")
 
-    if __name__ == "__main__":
+if __name__ == "__main__":
     # Jalankan scraping dan simpan hasilnya
     bukit_vista_df.to_excel('data_bukit_vista.xlsx', index=False)
     property_description.to_excel('property_description.xlsx', index=False)
