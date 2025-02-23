@@ -844,6 +844,6 @@ if __name__ == "__main__":
     property_description.to_excel('property_description.xlsx', index=False)
 
     # Unggah file ke Google Drive
-    folder_id = 'YOUR_GOOGLE_DRIVE_FOLDER_ID'  # Ganti dengan ID folder Google Drive Anda
+    folder_id = '1zdLvHzqvv0PGJ6Bt5zhL52yxMTi845ou'  # Ganti dengan ID folder Google Drive Anda
     upload_to_google_drive('data_bukit_vista.xlsx', folder_id)
     upload_to_google_drive('property_description.xlsx', folder_id)
