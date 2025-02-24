@@ -1,12 +1,15 @@
-name: Scheduled Scraping
+name: Scraping and Upload to Google Drive
 
 on:
+  # Trigger terjadwal (setiap hari pukul 00:00 UTC)
   schedule:
-    - cron: '0 0 * * *'  # Menjalankan setiap hari pada tengah malam (UTC)
-  workflow_dispatch:  # Menambahkan opsi untuk menjalankan manual
+    - cron: '0 0 * * *'  # Format cron: menit jam hari bulan hari-minggu
+
+  # Trigger manual dari GitHub Actions UI
+  workflow_dispatch:
 
 jobs:
-  scrape:
+  scrape-and-upload:
     runs-on: ubuntu-latest
 
     steps:
@@ -16,47 +19,27 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v2
       with:
-        python-version: '3.11'  # Gunakan versi mayor saja
+        python-version: '3.11'  # Sesuaikan dengan versi Python yang Anda gunakan
 
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install -r requirements.txt
+        pip install -r requirements.txt  # Pastikan Anda memiliki file requirements.txt
 
-    - name: Install Google Chrome and ChromeDriver
+    - name: Set up Google Cloud credentials
+      env:
+        GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}  # Mengambil credential dari GitHub Secrets
       run: |
-        sudo apt-get update
-        sudo apt-get install -y wget curl unzip
-        wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
-        sudo sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list'
-        sudo apt-get update
-        sudo apt-get install -y google-chrome-stable
-        CHROME_VERSION=$(google-chrome --version | awk '{print $3}')
-        wget -q -O /tmp/chromedriver.zip "https://chromedriver.storage.googleapis.com/${CHROME_VERSION}/chromedriver_linux64.zip"
-        sudo unzip /tmp/chromedriver.zip -d /usr/local/bin/
-        sudo chmod +x /usr/local/bin/chromedriver
+        echo "$GOOGLE_CREDENTIALS" > credential.json  # Menyimpan credential ke file credential.json
 
     - name: Run scraping script
-      env:
-        GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
       run: |
-        echo "$GOOGLE_CREDENTIALS" > credentials.json
-        python scraping.py
+        python your_script.py  # Ganti dengan nama file script Anda
 
-    - name: Clean up credentials
+    - name: Install Google Drive API dependencies
       run: |
-        rm -f credentials.json
+        pip install google-auth google-auth-oauthlib google-auth-httplib2 google-api-python-client
 
-    - name: Upload results as artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: scraping-results
-        path: |
-          data_bukit_vista.xlsx
-          property_description.xlsx
-
-    - name: Check if scraping script ran successfully
-      if: ${{ failure() }}
+    - name: Upload files to Google Drive
       run: |
-        echo "Scraping script failed! Check the logs for more details."
-        exit 1
+        python upload_to_drive.py  # Script untuk mengunggah file ke Google Drive

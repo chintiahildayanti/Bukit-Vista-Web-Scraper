@@ -1,23 +1,16 @@
 """1. Import library yang dibutuhkan"""
 from bs4 import BeautifulSoup
 from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
-from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 from zipfile import ZipFile
 import requests
-import logging
 import time
-import json
 import os
 import re
 import numpy as np
 import pandas as pd
-from google.oauth2 import service_account
-from googleapiclient.discovery import build
-from googleapiclient.http import MediaFileUpload
 pd.options.display.max_colwidth = 50000
 pd.set_option('display.max_columns', None)
 pd.set_option('display.max_rows', None)
@@ -29,6 +22,7 @@ from nltk.tokenize import word_tokenize
 from nltk.stem import WordNetLemmatizer
 from nltk.stem import PorterStemmer
 from sklearn.feature_extraction.text import TfidfVectorizer
+from tensorflow.keras.preprocessing.text import Tokenizer
 # from google.colab import files
 nltk.download('punkt')
 nltk.download('wordnet')
@@ -116,12 +110,14 @@ uluwatu_property = uluwatu_property[uluwatu_property['title'] != "Bingin Beach H
 
 # fungsi untuk scraping href yang berada di "https://www.bukitvista.com/property/"
 def scrape_property_links(url: str) -> pd.DataFrame:
-    # Setup ChromeDriver
-    options = webdriver.ChromeOptions()
-    options.add_argument("--headless")  # Run in headless mode
-    options.add_argument("--no-sandbox")
-    options.add_argument("--disable-dev-shm-usage")
-    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
+    # Membuat instance dari Chrome WebDriver dengan konfigurasi khusus
+    option = webdriver.ChromeOptions()
+    option.add_argument("--start-maximized")  # Membuka jendela browser Chrome dalam mode layar penuh
+    option.add_argument("--headless")   # Menjalankan browser dalam mode tanpa antarmuka grafis
+    option.add_argument("--disable-gpu")  # Menonaktifkan akselerasi GPU
+    option.add_argument("--no-sandbox")   # Menonaktifkan sandbox untuk keamanan
+    option.add_argument("--remote-debugging-port=56905")   # Mengaktifkan debugging jarak jauh pada port 9230
+    driver = webdriver.Chrome(options=option)
 
     # Memuat halaman
     driver.get(url)
@@ -747,6 +743,67 @@ def vectorizer(bukit_vista_df):
 # Menerapkan fungsi
 bukit_vista_df = vectorizer(bukit_vista_df)
 
+"""12. Tokenizer"""
+
+# Mendefinisikan fungsi tokenizer
+def tokenizer(bukit_vista_df):
+  # Inisialisasi tokenizer
+  tokenizer_title = Tokenizer()
+  tokenizer_property_type = Tokenizer()
+  tokenizer_tags = Tokenizer()
+  tokenizer_address_detail = Tokenizer()
+  tokenizer_price = Tokenizer()
+  tokenizer_property_id = Tokenizer()
+  tokenizer_area = Tokenizer()
+
+  # Membuat tokenizer untuk kolom 'title'
+  title_tokenizer = tokenizer_title.fit_on_texts(bukit_vista_df['cleaned_title'])
+
+  # Mengonversi teks dalam kolom 'title' menjadi urutan angka (sequences)
+  bukit_vista_df['title_sequences'] = tokenizer_title.texts_to_sequences(bukit_vista_df['cleaned_title'])
+
+  # Membuat tokenizer untuk kolom 'property_type'
+  property_type_tokenizer = tokenizer_property_type.fit_on_texts(bukit_vista_df['cleaned_property_type'])
+
+  # Mengonversi teks dalam kolom 'property_type' menjadi urutan angka (sequences)
+  bukit_vista_df['property_type_sequences'] = tokenizer_property_type.texts_to_sequences(bukit_vista_df['cleaned_property_type'])
+
+  # Membuat tokenizer untuk kolom 'tags'
+  tags_tokenizer = tokenizer_tags.fit_on_texts(bukit_vista_df['tags'])
+
+  # Mengonversi teks dalam kolom 'tags' menjadi urutan angka (sequences)
+  bukit_vista_df['tags_sequences'] = tokenizer_tags.texts_to_sequences(bukit_vista_df['tags'])
+
+  # Membuat tokenizer untuk kolom 'address_detail'
+  address_detail_tokenizer = tokenizer_address_detail.fit_on_texts(bukit_vista_df['address_detail'])
+
+  # Mengonversi teks dalam kolom 'address_detail' menjadi urutan angka (sequences)
+  bukit_vista_df['address_detail_sequences'] = tokenizer_address_detail.texts_to_sequences(bukit_vista_df['address_detail'])
+
+  # Membuat tokenizer untuk kolom 'price'
+  price_tokenizer = tokenizer_price.fit_on_texts(bukit_vista_df['price_in_usd'])
+
+  # Mengonversi teks dalam kolom 'price' menjadi urutan angka (sequences)
+  bukit_vista_df['price_sequences'] = tokenizer_price.texts_to_sequences(bukit_vista_df['price_in_usd'])
+
+  # Membuat tokenizer untuk kolom 'property_id'
+  property_id_tokenizer = tokenizer_property_id.fit_on_texts(bukit_vista_df['property_id'])
+
+  # Mengonversi teks dalam kolom 'property_id' menjadi urutan angka (sequences)
+  bukit_vista_df['property_id_sequences'] = tokenizer_property_id.texts_to_sequences(bukit_vista_df['property_id'])
+
+  # Membuat tokenizer untuk kolom 'area'
+  area_tokenizer = tokenizer_area.fit_on_texts(bukit_vista_df['cleaned_area'])
+
+  # Mengonversi teks dalam kolom 'area' menjadi urutan angka (sequences)
+  bukit_vista_df['area_sequences'] = tokenizer_area.texts_to_sequences(bukit_vista_df['cleaned_area'])
+
+  # Mengembalikan bukit_vista_df
+  return bukit_vista_df
+
+# Menerapkan fungsi
+bukit_vista_df = tokenizer(bukit_vista_df)
+
 """13. Download Dataset"""
 
 # save to excel bukit_vista_df
@@ -754,54 +811,3 @@ bukit_vista_df.to_excel('data_bukit_vista.xlsx', index=False)
 
 # save to excel property_description
 property_description.to_excel('property_description.xlsx', index=False)
-
-def upload_to_google_drive(file_path, folder_id):
-    try:
-        # Load credentials from environment variable
-        credentials_info = json.loads(os.environ["GOOGLE_CREDENTIALS"])
-        creds = service_account.Credentials.from_service_account_info(
-            credentials_info,
-            scopes=['https://www.googleapis.com/auth/drive']
-        )
-
-        # Buat layanan Google Drive
-        service = build('drive', 'v3', credentials=creds)
-
-        # Buat metadata file
-        file_metadata = {
-            'name': os.path.basename(file_path),
-            'parents': [folder_id]  # ID folder tujuan di Google Drive
-        }
-
-        # Unggah file
-        media = MediaFileUpload(file_path, resumable=True)
-        file = service.files().create(body=file_metadata, media_body=media, fields='id').execute()
-
-        print(f"File {file_path} berhasil diunggah ke Google Drive dengan ID: {file.get('id')}")
-    
-    except Exception as e:
-        print(f"Gagal mengunggah file: {e}")
-
-if __name__ == "__main__":
-    try:
-        # Jalankan scraping dan simpan hasilnya
-        bukit_vista_df.to_excel('data_bukit_vista.xlsx', index=False)
-        property_description.to_excel('property_description.xlsx', index=False)
-
-        # Unggah file ke Google Drive
-        folder_id = '1zdLvHzqvv0PGJ6Bt5zhL52yxMTi845ou'  # Ganti dengan ID folder Google Drive Anda
-        upload_to_google_drive('data_bukit_vista.xlsx', folder_id)
-        upload_to_google_drive('property_description.xlsx', folder_id)
-    
-    except Exception as e:
-        print(f"Terjadi kesalahan saat menjalankan script: {e}")
-
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
-
-try:
-    # Your scraping code here
-    logger.info("Scraping started...")
-except Exception as e:
-    logger.error(f"An error occurred: {e}")
-    raise
