@@ -34,7 +34,7 @@ jobs:
 
     - name: Run scraping script
       run: |
-        python your_script.py  # Ganti dengan nama file script Anda
+        python scraping.py  # Ganti dengan nama file script Anda
 
     - name: Install Google Drive API dependencies
       run: |
