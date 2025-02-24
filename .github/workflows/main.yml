@@ -1,4 +1,4 @@
-name: Scraping and Upload to Google Drive
+name: Scraping and Save to Google Spreadsheet
 
 on:
   # Trigger terjadwal (setiap hari pukul 00:00 UTC)
@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  scrape-and-upload:
+  scrape-and-save:
     runs-on: ubuntu-latest
 
     steps:
@@ -34,12 +34,12 @@ jobs:
 
     - name: Run scraping script
       run: |
-        python scraping.py  # Ganti dengan nama file script Anda
+        python scraping.py
 
-    - name: Install Google Drive API dependencies
+    - name: Install Google Sheets API dependencies
       run: |
-        pip install google-auth google-auth-oauthlib google-auth-httplib2 google-api-python-client
+        pip install gspread google-auth
 
-    - name: Upload files to Google Drive
+    - name: Save data to Google Spreadsheet
       run: |
-        python upload_to_drive.py  # Script untuk mengunggah file ke Google Drive
+        python save_to_spreadsheet.py  # Script untuk menyimpan data ke Google Spreadsheet
