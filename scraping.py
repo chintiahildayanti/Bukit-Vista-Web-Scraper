@@ -5,6 +5,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 from zipfile import ZipFile
+from datetime import datetime
 import requests
 import time
 import os
@@ -806,8 +807,12 @@ bukit_vista_df = tokenizer(bukit_vista_df)
 
 """13. Download Dataset"""
 
-# save to excel bukit_vista_df
-bukit_vista_df.to_excel('data_bukit_vista.xlsx', index=False)
+# Generate timestamp dengan format hari-bulan-tahun
+timestamp = datetime.now().strftime("%d-%m-%Y")
 
-# save to excel property_description
-property_description.to_excel('property_description.xlsx', index=False)
+# Simpan file dengan nama yang mengandung timestamp
+bukit_vista_filename = f"data_bukit_vista_{timestamp}.xlsx"
+property_description_filename = f"property_description_{timestamp}.xlsx"
+
+bukit_vista_df.to_excel(bukit_vista_filename, index=False)
+property_description.to_excel(property_description_filename, index=False)

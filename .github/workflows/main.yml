@@ -1,9 +1,9 @@
 name: Scraping and Upload to Google Drive
 
 on:
-  # Trigger terjadwal (setiap hari pukul 17:00 UTC atau 00:00 WIB)
+  # Trigger terjadwal (setiap hari pukul 10:00 UTC atau 17:30 WIB)
   schedule:
-    - cron: '30 3 * * *'  # Format cron: menit jam hari bulan hari-minggu
+    - cron: '30 10 * * *'  # Format cron: menit jam hari bulan hari-minggu
 
   # Trigger manual dari GitHub Actions UI
   workflow_dispatch:
