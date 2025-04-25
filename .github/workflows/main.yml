@@ -1,6 +1,6 @@
-name: Scraping and Upload to Google Drive
+name: Scraping and Upload to Google Drive  # Nama workflow GitHub Actions
 
-on:
+on:  # Trigger workflow
   # Trigger terjadwal (setiap hari pukul 10:00 UTC atau 17:30 WIB)
   schedule:
     - cron: '30 10 * * *'  # Format cron: menit jam hari bulan hari-minggu
@@ -8,38 +8,38 @@ on:
   # Trigger manual dari GitHub Actions UI
   workflow_dispatch:
 
-jobs:
+jobs:  # Nama job
   scrape-and-upload:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest  # Menentukan environment OS untuk menjalankan job
 
-    steps:
+    steps:  # Step 1: Clone repository ke environment runner
     - name: Checkout repository
       uses: actions/checkout@v2
 
-    - name: Set up Python
+    - name: Set up Python    # Step 2: Menyiapkan versi Python
       uses: actions/setup-python@v2
       with:
-        python-version: '3.11'  # Sesuaikan dengan versi Python yang Anda gunakan
+        python-version: '3.11'  # Versi Python yang digunakan
 
-    - name: Install dependencies
+    - name: Install dependencies    # Step 3: Install dependencies dari requirements.txt
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt  # Pastikan Anda memiliki file requirements.txt
 
-    - name: Set up Google Cloud credentials
+    - name: Set up Google Cloud credentials    # Step 4: Mengatur credentials Google Cloud dari GitHub Secrets
       env:
         GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}  # Mengambil credential dari GitHub Secrets
       run: |
         echo "$GOOGLE_CREDENTIALS" > credential.json  # Menyimpan credential ke file credential.json
 
-    - name: Run scraping script
+    - name: Run scraping script  # Step 5: Menjalankan script scraping (mengambil data dari website)
       run: |
         python scraping.py  # Ganti dengan nama file script Anda
 
-    - name: Install Google Drive API dependencies
+    - name: Install Google Drive API dependencies  # Step 6: Install library tambahan untuk Google Drive API
       run: |
         pip install google-auth google-auth-oauthlib google-auth-httplib2 google-api-python-client
 
-    - name: Upload files to Google Drive
+    - name: Upload files to Google Drive    # Step 7: Jalankan script untuk mengunggah file ke Google Drive
       run: |
         python upload_to_drive.py  # Script untuk mengunggah file ke Google Drive
